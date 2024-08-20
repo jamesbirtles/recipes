@@ -76,18 +76,28 @@ const str = <T>(
 	return fallback;
 };
 
-const array = (object: Record<string, unknown>, key: string) => {
+const img = (object: Record<string, unknown>, key: string): string | null => {
+	const get = (value: unknown) => {
+		if (value == null) {
+			return null;
+		}
+		if (typeof value === 'string') {
+			return value;
+		}
+		if (typeof value === 'object' && '@type' in value && value['@type'] === 'ImageObject') {
+			return str(value, 'url', null);
+		}
+		return null;
+	};
+
 	const value = object[key];
-	if (Array.isArray(value)) {
-		return value;
-	}
-	return [];
+	return Array.isArray(value) ? get(value[0]) : get(value);
 };
 
 const extractRecipe = (sourceURL: string, object: Record<string, unknown>): Recipe => {
 	console.dir(object, { depth: Infinity });
 	const title = str(object, 'name', 'Unnamed');
 	const url = str(object, 'mainEntityOfPage', str(object, '@id', sourceURL));
-	const image = str(array(object, 'image'), 0, null);
+	const image = img(object, 'image');
 	return { title, url, image, raw: object };
 };

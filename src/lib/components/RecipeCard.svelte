@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Recipe } from '$lib/Recipe';
+	import { supabase } from '$lib/supbaseClient';
 	import { Card, CardHeader, CardTitle } from './ui/card';
 
 	export let recipe: Recipe;
@@ -7,7 +8,9 @@
 
 <Card class="overflow-clip">
 	<img
-		src={recipe.image ?? `https://loremflickr.com/400/400/meal,dish?random=${Math.random()}`}
+		src={recipe.image
+			? supabase.storage.from('recipe-images').getPublicUrl(recipe.image).data.publicUrl
+			: `https://loremflickr.com/400/400/meal,dish?random=${Math.random()}`}
 		alt=""
 		width="400"
 		height="400"
