@@ -39,6 +39,9 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"@supabase/supabase-js": "^2.45.1"
+		"@supabase/supabase-js": "^2.45.1",
+		"clsx": "^2.1.1",
+		"tailwind-merge": "^2.5.2",
+		"tailwind-variants": "^0.2.1"
 	}
 }
