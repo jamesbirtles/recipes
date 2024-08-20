@@ -1,5 +1,13 @@
 import * as cheerio from 'cheerio';
 
+export type Recipe = {
+	title: string;
+	url: string;
+	image: string | null;
+	// TODO: remove
+	raw: unknown;
+};
+
 // TODO: investigate security implications of just visiting and downloading any URL the user gives us.
 
 export const importRecipe = async (url: string) => {
@@ -23,7 +31,7 @@ export const importRecipe = async (url: string) => {
 	}
 
 	const ld = tryParse(ldjson);
-	const recipe = findRecipe(ld);
+	const recipe = findRecipe(url, ld);
 	return recipe;
 };
 
@@ -37,24 +45,18 @@ const tryParse = (value: string): Record<string, unknown>[] => {
 	}
 };
 
-type Recipe = {
-	title: string;
-	// TODO: remove
-	raw: unknown;
-};
-
 // I'm sort of tempted to try and bring in something like Effect-ts Schema to parse this data,
 // in rust I would probably be using serde
-const findRecipe = (objects: Record<string, unknown>[]): Recipe | null => {
+const findRecipe = (url: string, objects: Record<string, unknown>[]): Recipe | null => {
 	for (const object of objects) {
 		const type = object['@type'];
 		if (type === 'Recipe') {
-			return extractRecipe(object) as Recipe;
+			return extractRecipe(url, object) as Recipe;
 		}
 
 		const graph = object['@graph'];
 		if (Array.isArray(graph)) {
-			const recipe = findRecipe(graph);
+			const recipe = findRecipe(url, graph);
 			if (recipe != null) return recipe;
 		}
 	}
@@ -62,18 +64,30 @@ const findRecipe = (objects: Record<string, unknown>[]): Recipe | null => {
 	return null;
 };
 
-const str = (object: Record<string, unknown>, key: string, fallback?: string) => {
-	const value = object[key];
+const str = <T>(
+	object: Record<string | number, unknown> | unknown[],
+	key: string | number,
+	fallback: T
+): string | T => {
+	const value = (object as Record<string | number, unknown>)[key];
 	if (typeof value === 'string') {
 		return value;
 	}
-	if (fallback != null) {
-		return fallback;
-	}
-	throw new Error(`missing expected property '${key}'`);
+	return fallback;
 };
 
-const extractRecipe = (object: Record<string, unknown>): Recipe => {
+const array = (object: Record<string, unknown>, key: string) => {
+	const value = object[key];
+	if (Array.isArray(value)) {
+		return value;
+	}
+	return [];
+};
+
+const extractRecipe = (sourceURL: string, object: Record<string, unknown>): Recipe => {
+	console.dir(object, { depth: Infinity });
 	const title = str(object, 'name', 'Unnamed');
-	return { title, raw: object };
+	const url = str(object, 'mainEntityOfPage', str(object, '@id', sourceURL));
+	const image = str(array(object, 'image'), 0, null);
+	return { title, url, image, raw: object };
 };

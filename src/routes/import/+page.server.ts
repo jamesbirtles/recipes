@@ -17,8 +17,19 @@ export const actions = {
 			return fail(400, { status: 'error', message: 'Recipe not found in page' });
 		}
 
-		const result = await supabase.from('recipes').insert({ title: recipe.title });
-		console.log(result);
+		const { error } = await supabase.from('recipes').insert({
+			title: recipe.title,
+			url: recipe.url,
+			// TODO: download image to storage
+			image: recipe.image
+		});
+		if (error) {
+			console.error('Failed to insert recipe', error);
+			return fail(500, {
+				status: 'error',
+				message: 'Something went wrong trying to save the recipe. Please try again later.'
+			});
+		}
 
 		redirect(307, '/');
 	}
