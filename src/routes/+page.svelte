@@ -17,16 +17,7 @@
 </h1>
 
 <div class="grid grid-cols-5 gap-4">
-	{#each data.recipes as recipe}
-		<RecipeCard {recipe} />
-		<RecipeCard {recipe} />
-		<RecipeCard {recipe} />
-		<RecipeCard {recipe} />
-		<RecipeCard {recipe} />
-		<RecipeCard {recipe} />
-		<RecipeCard {recipe} />
-		<RecipeCard {recipe} />
-		<RecipeCard {recipe} />
+	{#each data.recipes as recipe (recipe.id)}
 		<RecipeCard {recipe} />
 	{/each}
 </div>

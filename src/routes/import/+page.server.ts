@@ -1,3 +1,5 @@
+import { importRecipe } from '$lib/Recipe.js';
+import { supabase } from '$lib/supbaseClient.js';
 import { fail, redirect } from '@sveltejs/kit';
 
 export const actions = {
@@ -9,6 +11,15 @@ export const actions = {
 		}
 
 		console.log('go import the recipe', recipeURL);
+
+		const recipe = await importRecipe(recipeURL);
+		if (recipe == null) {
+			return fail(400, { status: 'error', message: 'Recipe not found in page' });
+		}
+
+		const result = await supabase.from('recipes').insert({ title: recipe.title });
+		console.log(result);
+
 		redirect(307, '/');
 	}
 };
