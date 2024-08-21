@@ -87,7 +87,7 @@ const findRecipe = (
 
 		const graph = object['@graph'];
 		if (Array.isArray(graph)) {
-			const recipe = findRecipe(url, graph);
+			const recipe = findRecipe(url, graph as Record<string, unknown>[]);
 			if (recipe != null) return recipe;
 		}
 	}
