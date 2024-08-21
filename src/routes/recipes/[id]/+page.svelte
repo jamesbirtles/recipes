@@ -7,14 +7,29 @@
 	import RecipeSectionView from './RecipeSectionView.svelte';
 	import ExternalLinkIcon from 'lucide-svelte/icons/external-link';
 	import IngredientsList from './IngredientsList.svelte';
+	import ImportIcon from 'lucide-svelte/icons/refresh-cw';
+	import type { ActionResult } from '@sveltejs/kit';
+	import { toast } from 'svelte-sonner';
+	import { enhance } from '$app/forms';
+	import { twMerge } from 'tailwind-merge';
 
 	export let data;
 
 	$: recipe = decodeRecipe(data.recipe);
+	let reimporting = false;
 
 	const friendlyURL = (urlString: string) => {
 		const url = new URL(urlString);
 		return url.host + url.pathname;
+	};
+
+	const onResult = (result: ActionResult) => {
+		if (result.type === 'failure') {
+			toast.error((result.data?.message as string | undefined) ?? 'Something went wrong');
+		} else if (result.type === 'success') {
+			console.log(result.data);
+			toast.success('Recipe successfully updated!');
+		}
 	};
 </script>
 
@@ -54,6 +69,24 @@
 				{friendlyURL(recipe.url)}
 			</a>
 		</div>
+		<form
+			method="post"
+			class="contents"
+			action="?/reimport"
+			use:enhance={() => {
+				reimporting = true;
+				return ({ result, update }) => {
+					update().then(() => {
+						reimporting = false;
+						onResult(result);
+					});
+				};
+			}}
+		>
+			<Button type="submit" class="mt-6 self-start" variant="outline">
+				<ImportIcon class={twMerge('mr-4 h-4 w-4', reimporting && 'animate-spin')} /> Sync Latest
+			</Button>
+		</form>
 	</div>
 
 	<div>

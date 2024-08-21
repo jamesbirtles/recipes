@@ -2,6 +2,7 @@ import * as cheerio from 'cheerio';
 import * as StructuredData from './StructuredData';
 import { Schema } from '@effect/schema';
 import { Array, Match, Option, Predicate } from 'effect';
+import { supabase } from './supbaseClient';
 
 export const RecipeStep = Schema.TaggedStruct('RecipeStep', {
 	title: Schema.String.pipe(Schema.optionalWith({ as: 'Option' })),
@@ -48,7 +49,13 @@ export const importRecipe = async (url: string) => {
 
 	const ld = tryParse(ldjson);
 	const recipe = findRecipe(url, ld);
-	return recipe;
+	if (!recipe) return null;
+
+	const image = Option.isSome(recipe.image)
+		? Option.some(await updateRecipeImage(recipe.id, recipe.image.value))
+		: Option.none();
+
+	return Recipe.make({ ...recipe, image });
 };
 
 const tryParse = (value: string): Record<string, unknown>[] => {
@@ -152,4 +159,21 @@ const extractRecipe = (sourceURL: string, object: Record<string, unknown>): type
 		instructions,
 		ingredients: recipe.recipeIngredient,
 	});
+};
+
+const updateRecipeImage = async (recipeID: string, imageURL: string) => {
+	const imageResponse = await fetch(imageURL, { headers: { accept: 'image/*' } });
+	// TODO: some amount of validation that the image response was valid
+	const contentType = imageResponse.headers.get('content-type') ?? 'image/jpeg';
+	const imageData = await imageResponse.arrayBuffer();
+
+	const { data, error } = await supabase.storage
+		.from('recipe-images')
+		.upload(`recipes/${recipeID}/image.jpg`, imageData, { contentType });
+	if (error) {
+		console.error('Failed to upload image to bucket', error);
+		throw error;
+	}
+
+	return data!.path;
 };
