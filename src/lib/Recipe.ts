@@ -16,18 +16,23 @@ export const RecipeSection = Schema.TaggedStruct('RecipeSection', {
 
 export const Recipe = Schema.Struct({
 	id: Schema.String,
+	user_id: Schema.String,
 	title: Schema.String,
 	url: Schema.String,
 	image: Schema.String.pipe(Schema.OptionFromNullOr),
 	instructions: Schema.Array(RecipeSection).pipe(Schema.OptionFromNullOr),
 	ingredients: Schema.Array(Schema.String),
 });
+export const NewRecipe = Recipe.pipe(Schema.omit('user_id'));
 export const encodeRecipe = Schema.encodeUnknownSync(Recipe);
 export const decodeRecipe = Schema.decodeUnknownSync(Recipe);
 
 // TODO: investigate security implications of just visiting and downloading any URL the user gives us.
 
-export const importRecipe = async (supabase: SupabaseClient, url: string) => {
+export const importRecipe = async (
+	supabase: SupabaseClient,
+	url: string,
+): Promise<typeof NewRecipe.Type | null> => {
 	const result = await fetch(url, {
 		headers: { accept: 'text/html' },
 	});
@@ -55,7 +60,7 @@ export const importRecipe = async (supabase: SupabaseClient, url: string) => {
 		? Option.some(await updateRecipeImage(supabase, recipe.id, recipe.image.value))
 		: Option.none();
 
-	return Recipe.make({ ...recipe, image });
+	return { ...recipe, image };
 };
 
 const tryParse = (value: string): Record<string, unknown>[] => {
@@ -70,7 +75,10 @@ const tryParse = (value: string): Record<string, unknown>[] => {
 
 // I'm sort of tempted to try and bring in something like Effect-ts Schema to parse this data,
 // in rust I would probably be using serde
-const findRecipe = (url: string, objects: Record<string, unknown>[]): typeof Recipe.Type | null => {
+const findRecipe = (
+	url: string,
+	objects: Record<string, unknown>[],
+): typeof NewRecipe.Type | null => {
 	for (const object of objects) {
 		const type = object['@type'];
 		if (type === 'Recipe') {
@@ -117,7 +125,10 @@ const img = (object: Record<string, unknown>, key: string): string | null => {
 	return Array.isArray(value) ? get(value[0]) : get(value);
 };
 
-const extractRecipe = (sourceURL: string, object: Record<string, unknown>): typeof Recipe.Type => {
+const extractRecipe = (
+	sourceURL: string,
+	object: Record<string, unknown>,
+): typeof NewRecipe.Type => {
 	console.dir(object, { depth: Infinity });
 
 	// TODO: use effect schema to extract these
@@ -151,14 +162,14 @@ const extractRecipe = (sourceURL: string, object: Record<string, unknown>): type
 		),
 	);
 
-	return Recipe.make({
+	return {
 		id: crypto.randomUUID(),
 		title: recipe.name,
 		url,
 		image,
 		instructions,
 		ingredients: recipe.recipeIngredient,
-	});
+	};
 };
 
 const updateRecipeImage = async (supabase: SupabaseClient, recipeID: string, imageURL: string) => {

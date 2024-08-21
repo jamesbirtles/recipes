@@ -18,7 +18,15 @@ export const actions = {
 
 		const { error } = await supabase
 			.from('recipes')
-			.update(encodeRecipe(Recipe.make({ ...recipe, id: existingRecipe.id })))
+			.update(
+				encodeRecipe(
+					Recipe.make({
+						...recipe,
+						id: existingRecipe.id,
+						user_id: existingRecipe.user_id,
+					}),
+				),
+			)
 			.eq('id', existingRecipe.id);
 		if (error) {
 			console.error('Failed to reimport recipe', error);
