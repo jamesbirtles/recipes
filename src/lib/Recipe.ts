@@ -1,22 +1,25 @@
 import * as cheerio from 'cheerio';
+import { decodeRecipe } from './StructuredData';
+import { Schema } from '@effect/schema';
+import { Array, Match, Option, Predicate } from 'effect';
 
-export type Recipe = {
-	title: string;
-	url: string;
-	image: string | null;
-	instructions: RecipeInstructions | null;
-	// TODO: remove
-	raw: unknown;
-};
+export const RecipeStep = Schema.TaggedStruct('RecipeStep', {
+	title: Schema.String.pipe(Schema.optionalWith({ as: 'Option' })),
+	text: Schema.String,
+});
 
-export type RecipeInstructions = {
-	title?: string;
-	steps: RecipeStep[];
-};
+export const RecipeSection = Schema.TaggedStruct('RecipeSection', {
+	title: Schema.String,
+	steps: Schema.Array(RecipeStep),
+});
 
-export type RecipeStep = {
-	text: string;
-};
+export const Recipe = Schema.Struct({
+	title: Schema.String,
+	url: Schema.String,
+	image: Schema.String.pipe(Schema.optionalWith({ as: 'Option' })),
+	instructions: Schema.Array(RecipeSection).pipe(Schema.optionalWith({ as: 'Option' })),
+});
+export const encodeRecipe = Schema.encodeUnknownSync(Recipe);
 
 // TODO: investigate security implications of just visiting and downloading any URL the user gives us.
 
@@ -47,8 +50,8 @@ export const importRecipe = async (url: string) => {
 
 const tryParse = (value: string): Record<string, unknown>[] => {
 	try {
-		// Kind of an ugly hack to parse back-to-back json objects. I'd probably consider rewriting
-		// this importer in rust and using some good JSON parser that can handle this case
+		// Kind of an ugly hack to parse back-to-back json objects. Maybe should look into
+		// a better parser..
 		return JSON.parse('[' + value.replace(/\}\{/g, '},{') + ']');
 	} catch {
 		throw new Error('Page metadata is not valid JSON');
@@ -57,11 +60,11 @@ const tryParse = (value: string): Record<string, unknown>[] => {
 
 // I'm sort of tempted to try and bring in something like Effect-ts Schema to parse this data,
 // in rust I would probably be using serde
-const findRecipe = (url: string, objects: Record<string, unknown>[]): Recipe | null => {
+const findRecipe = (url: string, objects: Record<string, unknown>[]): typeof Recipe.Type | null => {
 	for (const object of objects) {
 		const type = object['@type'];
 		if (type === 'Recipe') {
-			return extractRecipe(url, object) as Recipe;
+			return extractRecipe(url, object);
 		}
 
 		const graph = object['@graph'];
@@ -104,10 +107,39 @@ const img = (object: Record<string, unknown>, key: string): string | null => {
 	return Array.isArray(value) ? get(value[0]) : get(value);
 };
 
-const extractRecipe = (sourceURL: string, object: Record<string, unknown>): Recipe => {
+const extractRecipe = (sourceURL: string, object: Record<string, unknown>): typeof Recipe.Type => {
 	console.dir(object, { depth: Infinity });
-	const title = str(object, 'name', 'Unnamed');
+
+	// TODO: use effect schema to extract these
 	const url = str(object, 'mainEntityOfPage', str(object, '@id', sourceURL));
-	const image = img(object, 'image');
-	return { title, url, image, instructions: null, raw: object };
+	const image = Option.fromNullable(img(object, 'image'));
+
+	const recipe = decodeRecipe(object);
+	console.dir(recipe, { depth: Infinity });
+	const instructions = recipe.recipeInstructions.pipe(
+		Option.andThen((items) =>
+			Match.value(items).pipe(
+				Match.when(Array.every(Predicate.isString), () => {
+					throw new Error('String-only recipe instructions not yet supported');
+				}),
+				Match.when(Array.every(Predicate.isTagged('HowToSection')), () => {
+					throw new Error('HowToSection recipe instructions not yet supported');
+				}),
+				Match.when(Array.every(Predicate.isTagged('HowToStep')), (steps) => [
+					RecipeSection.make({
+						title: 'Instructions',
+						steps: steps.map((step) =>
+							RecipeStep.make({
+								title: Option.none(),
+								text: step.text,
+							}),
+						),
+					}),
+				]),
+				Match.exhaustive,
+			),
+		),
+	);
+
+	return Recipe.make({ title: recipe.name, url, image, instructions });
 };

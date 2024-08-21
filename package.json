@@ -40,10 +40,12 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@effect/schema": "^0.71.1",
 		"@supabase/supabase-js": "^2.45.1",
 		"bits-ui": "^0.21.13",
 		"cheerio": "^1.0.0",
 		"clsx": "^2.1.1",
+		"effect": "^3.6.5",
 		"lucide-svelte": "^0.428.0",
 		"mode-watcher": "^0.4.1",
 		"svelte-sonner": "^0.3.27",

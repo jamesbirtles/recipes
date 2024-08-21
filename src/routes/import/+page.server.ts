@@ -1,6 +1,7 @@
-import { importRecipe } from '$lib/Recipe.js';
+import { encodeRecipe, importRecipe, Recipe } from '$lib/Recipe.js';
 import { supabase } from '$lib/supbaseClient.js';
 import { fail, redirect } from '@sveltejs/kit';
+import { Option } from 'effect';
 
 export const actions = {
 	async default(event) {
@@ -16,14 +17,13 @@ export const actions = {
 		}
 
 		const id = crypto.randomUUID();
-		const image = recipe.image ? await uploadImageToBucket(id, recipe.image) : null;
+		const image = Option.isSome(recipe.image)
+			? Option.some(await uploadImageToBucket(id, recipe.image.value))
+			: Option.none();
 
-		const { error } = await supabase.from('recipes').insert({
-			id,
-			title: recipe.title,
-			url: recipe.url,
-			image,
-		});
+		const { error } = await supabase
+			.from('recipes')
+			.insert({ id, ...encodeRecipe(Recipe.make({ ...recipe, image })) });
 		if (error) {
 			console.error('Failed to insert recipe', error);
 			return fail(500, {
