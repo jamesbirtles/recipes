@@ -24,6 +24,6 @@ export const actions = {
 			});
 		}
 
-		redirect(307, `/recipes/${recipe.id}`);
+		redirect(307, `/recipes/${recipe.id}?imported`);
 	},
 };
