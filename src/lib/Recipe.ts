@@ -19,6 +19,7 @@ export const Recipe = Schema.Struct({
 	url: Schema.String,
 	image: Schema.String.pipe(Schema.OptionFromNullOr),
 	instructions: Schema.Array(RecipeSection).pipe(Schema.OptionFromNullOr),
+	ingredients: Schema.Array(Schema.String),
 });
 export const encodeRecipe = Schema.encodeUnknownSync(Recipe);
 export const decodeRecipe = Schema.decodeUnknownSync(Recipe);
@@ -129,7 +130,7 @@ const extractRecipe = (sourceURL: string, object: Record<string, unknown>): type
 				}),
 				Match.when(Array.every(Predicate.isTagged('HowToStep')), (steps) => [
 					RecipeSection.make({
-						title: 'Instructions',
+						title: 'Method',
 						steps: steps.map((step) =>
 							RecipeStep.make({
 								title: Option.none(),
@@ -143,5 +144,12 @@ const extractRecipe = (sourceURL: string, object: Record<string, unknown>): type
 		),
 	);
 
-	return Recipe.make({ id: crypto.randomUUID(), title: recipe.name, url, image, instructions });
+	return Recipe.make({
+		id: crypto.randomUUID(),
+		title: recipe.name,
+		url,
+		image,
+		instructions,
+		ingredients: recipe.recipeIngredient,
+	});
 };

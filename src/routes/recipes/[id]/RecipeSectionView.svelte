@@ -4,12 +4,12 @@
 	export let section: typeof RecipeSection.Type;
 </script>
 
-<h3 class="scroll-m-20 text-2xl font-semibold tracking-tight">
+<h3 class="scroll-m-20 text-xl font-semibold tracking-tight">
 	{section.title}
 </h3>
 
 {#each section.steps as step}
-	<p class="max-w-prose leading-7 [&:not(:first-child)]:mt-6">
+	<p class="leading-7 [&:not(:first-child)]:mt-6">
 		{#if Option.isSome(step.title)}
 			<span class="font-semibold">{step.title.value}:</span>
 		{/if}
