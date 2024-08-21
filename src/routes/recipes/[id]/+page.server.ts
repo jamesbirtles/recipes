@@ -1,18 +1,17 @@
 import { decodeRecipe, encodeRecipe, importRecipe, Recipe } from '$lib/Recipe.js';
-import { supabase } from '$lib/supbaseClient.js';
 import { fail } from '@sveltejs/kit';
 
-export const load = async ({ params }) => {
+export const load = async ({ params, locals: { supabase } }) => {
 	const result = await supabase.from('recipes').select().eq('id', params.id).limit(1).single();
 	return { recipe: result.data };
 };
 
 export const actions = {
-	async reimport({ params }) {
+	async reimport({ params, locals: { supabase } }) {
 		const result = await supabase.from('recipes').select().eq('id', params.id).limit(1).single();
 		const existingRecipe = decodeRecipe(result.data);
 
-		const recipe = await importRecipe(existingRecipe.url);
+		const recipe = await importRecipe(supabase, existingRecipe.url);
 		if (recipe == null) {
 			return fail(400, { status: 'error', message: 'Recipe not found in page' });
 		}

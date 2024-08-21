@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
 	import { decodeRecipe } from '$lib/Recipe';
-	import { supabase } from '$lib/supbaseClient.js';
 	import { Option } from 'effect';
 	import RecipeSectionView from './RecipeSectionView.svelte';
 	import ExternalLinkIcon from 'lucide-svelte/icons/external-link';
@@ -42,7 +41,8 @@
 <div class="grid gap-8 sm:grid-cols-[16rem,1fr] md:grid-cols-[20rem,1fr]">
 	{#if Option.isSome(recipe.image)}
 		<img
-			src={supabase.storage.from('recipe-images').getPublicUrl(recipe.image.value).data.publicUrl}
+			src={data.supabase.storage.from('recipe-images').getPublicUrl(recipe.image.value).data
+				.publicUrl}
 			width={320}
 			height={320}
 			alt=""

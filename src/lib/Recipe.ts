@@ -2,7 +2,7 @@ import * as cheerio from 'cheerio';
 import * as StructuredData from './StructuredData';
 import { Schema } from '@effect/schema';
 import { Array, Match, Option, Predicate } from 'effect';
-import { supabase } from './supbaseClient';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 export const RecipeStep = Schema.TaggedStruct('RecipeStep', {
 	title: Schema.String.pipe(Schema.optionalWith({ as: 'Option' })),
@@ -27,7 +27,7 @@ export const decodeRecipe = Schema.decodeUnknownSync(Recipe);
 
 // TODO: investigate security implications of just visiting and downloading any URL the user gives us.
 
-export const importRecipe = async (url: string) => {
+export const importRecipe = async (supabase: SupabaseClient, url: string) => {
 	const result = await fetch(url, {
 		headers: { accept: 'text/html' },
 	});
@@ -52,7 +52,7 @@ export const importRecipe = async (url: string) => {
 	if (!recipe) return null;
 
 	const image = Option.isSome(recipe.image)
-		? Option.some(await updateRecipeImage(recipe.id, recipe.image.value))
+		? Option.some(await updateRecipeImage(supabase, recipe.id, recipe.image.value))
 		: Option.none();
 
 	return Recipe.make({ ...recipe, image });
@@ -161,7 +161,7 @@ const extractRecipe = (sourceURL: string, object: Record<string, unknown>): type
 	});
 };
 
-const updateRecipeImage = async (recipeID: string, imageURL: string) => {
+const updateRecipeImage = async (supabase: SupabaseClient, recipeID: string, imageURL: string) => {
 	const imageResponse = await fetch(imageURL, { headers: { accept: 'image/*' } });
 	// TODO: some amount of validation that the image response was valid
 	const contentType = imageResponse.headers.get('content-type') ?? 'image/jpeg';

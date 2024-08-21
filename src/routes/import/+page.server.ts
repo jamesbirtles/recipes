@@ -1,16 +1,15 @@
 import { encodeRecipe, importRecipe } from '$lib/Recipe.js';
-import { supabase } from '$lib/supbaseClient.js';
 import { fail, redirect } from '@sveltejs/kit';
 
 export const actions = {
-	async default(event) {
-		const formData = await event.request.formData();
+	async default({ request, locals: { supabase } }) {
+		const formData = await request.formData();
 		const recipeURL = formData.get('url');
 		if (recipeURL == null || typeof recipeURL !== 'string' || recipeURL.trim().length === 0) {
 			return fail(400, { status: 'error', message: 'Recipe URL missing or invalid' });
 		}
 
-		const recipe = await importRecipe(recipeURL);
+		const recipe = await importRecipe(supabase, recipeURL);
 		if (recipe == null) {
 			return fail(400, { status: 'error', message: 'Recipe not found in page' });
 		}
