@@ -8,8 +8,12 @@
 	{section.title}
 </h3>
 
-{#each section.steps as step}
-	<p class="leading-7 [&:not(:first-child)]:mt-6">
+{#each section.steps as step, index}
+	<h4 class="mb-2 mt-6 font-semibold">
+		Step {index + 1}
+	</h4>
+
+	<p class="whitespace-pre-line leading-7">
 		{#if Option.isSome(step.title)}
 			<span class="font-semibold">{step.title.value}:</span>
 		{/if}
