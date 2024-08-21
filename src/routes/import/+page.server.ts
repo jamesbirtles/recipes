@@ -22,18 +22,18 @@ export const actions = {
 			id,
 			title: recipe.title,
 			url: recipe.url,
-			image
+			image,
 		});
 		if (error) {
 			console.error('Failed to insert recipe', error);
 			return fail(500, {
 				status: 'error',
-				message: 'Something went wrong trying to save the recipe. Please try again later.'
+				message: 'Something went wrong trying to save the recipe. Please try again later.',
 			});
 		}
 
 		redirect(307, '/');
-	}
+	},
 };
 
 const uploadImageToBucket = async (recipeID: string, imageURL: string) => {

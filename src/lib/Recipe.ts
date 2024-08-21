@@ -22,7 +22,7 @@ export type RecipeStep = {
 
 export const importRecipe = async (url: string) => {
 	const result = await fetch(url, {
-		headers: { accept: 'text/html' }
+		headers: { accept: 'text/html' },
 	});
 	if (result.status != 200) {
 		throw new Error('Recipe URL responded with a non 200 status code');
@@ -77,7 +77,7 @@ const findRecipe = (url: string, objects: Record<string, unknown>[]): Recipe | n
 const str = <T>(
 	object: Record<string | number, unknown> | unknown[],
 	key: string | number,
-	fallback: T
+	fallback: T,
 ): string | T => {
 	const value = (object as Record<string | number, unknown>)[key];
 	if (typeof value === 'string') {
