@@ -19,14 +19,18 @@
 	Saved Recipes
 </h1>
 
-<div class="grid grid-cols-5 gap-4">
+<div class="grid gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
 	{#each recipes as recipe (recipe.id)}
 		<RecipeCard {recipe} />
 	{/each}
 </div>
 
 <div class="mt-8 flex items-center justify-center">
-	<Button href="/import"><ImportIcon class="mr-4 h-4 w-4" /> Import Recipe</Button>
+	<Button href="/import" class="[view-transition-name:import-button]">
+		<span class="flex items-center [view-transition-name:import-button-text]">
+			<ImportIcon class="mr-4 h-4 w-4" /> Import Recipe
+		</span>
+	</Button>
 </div>
 
 <!-- <pre class="mt-48">{JSON.stringify(recipes, null, 2)}</pre> -->

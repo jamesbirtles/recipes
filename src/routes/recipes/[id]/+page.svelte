@@ -3,7 +3,6 @@
 	import { decodeRecipe } from '$lib/Recipe';
 	import { supabase } from '$lib/supbaseClient.js';
 	import { Option } from 'effect';
-	import ArrowLeftIcon from 'lucide-svelte/icons/arrow-left';
 	import RecipeSectionView from './RecipeSectionView.svelte';
 	import ExternalLinkIcon from 'lucide-svelte/icons/external-link';
 	import IngredientsList from './IngredientsList.svelte';
@@ -12,6 +11,7 @@
 	import { toast } from 'svelte-sonner';
 	import { enhance } from '$app/forms';
 	import { twMerge } from 'tailwind-merge';
+	import BackButton from '$lib/components/BackButton.svelte';
 
 	export let data;
 
@@ -37,19 +37,16 @@
 	<title>{recipe.title}</title>
 </svelte:head>
 
-<Button variant="link" href="/" class="mb-6 self-start">
-	<ArrowLeftIcon class="mr-2 h-4 w-4" />
-	Back
-</Button>
+<BackButton href="/" />
 
-<div class="grid grid-cols-[20rem,1fr] gap-8">
+<div class="grid gap-8 sm:grid-cols-[16rem,1fr] md:grid-cols-[20rem,1fr]">
 	{#if Option.isSome(recipe.image)}
 		<img
 			src={supabase.storage.from('recipe-images').getPublicUrl(recipe.image.value).data.publicUrl}
 			width={320}
 			height={320}
 			alt=""
-			class="h-80 w-80 rounded-lg object-cover shadow"
+			class="aspect-video w-full rounded-lg object-cover shadow sm:aspect-square"
 			style:view-transition-name="recipe-image-{recipe.id}"
 		/>
 	{/if}
@@ -59,7 +56,7 @@
 			{recipe.title}
 		</h3>
 		<div class="flex items-center gap-2">
-			<ExternalLinkIcon class="h-3.5 w-3.5" />
+			<ExternalLinkIcon class="h-3.5 w-3.5 shrink-0" />
 			<a
 				href={recipe.url}
 				target="_blank"

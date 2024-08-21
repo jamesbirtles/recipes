@@ -15,7 +15,7 @@
 				alt=""
 				width="400"
 				height="400"
-				class="aspect-square rounded-t-lg object-cover"
+				class="aspect-video w-full rounded-t-lg object-cover sm:aspect-square"
 				style:view-transition-name="recipe-image-{recipe.id}"
 			/>
 		{/if}

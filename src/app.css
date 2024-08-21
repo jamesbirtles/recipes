@@ -56,3 +56,16 @@
 		@apply bg-background text-foreground;
 	}
 }
+
+::view-transition-old(import-button),
+::view-transition-new(import-button) {
+	height: 100%;
+}
+
+::view-transition-old(import-button-text),
+::view-transition-new(import-button-text) {
+	height: 100%;
+	object-fit: none;
+	overflow: clip;
+	object-position: left;
+}
