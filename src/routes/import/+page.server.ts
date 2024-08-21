@@ -16,14 +16,13 @@ export const actions = {
 			return fail(400, { status: 'error', message: 'Recipe not found in page' });
 		}
 
-		const id = crypto.randomUUID();
 		const image = Option.isSome(recipe.image)
-			? Option.some(await uploadImageToBucket(id, recipe.image.value))
+			? Option.some(await uploadImageToBucket(recipe.id, recipe.image.value))
 			: Option.none();
 
 		const { error } = await supabase
 			.from('recipes')
-			.insert({ id, ...encodeRecipe(Recipe.make({ ...recipe, image })) });
+			.insert(encodeRecipe(Recipe.make({ ...recipe, image })));
 		if (error) {
 			console.error('Failed to insert recipe', error);
 			return fail(500, {

@@ -1,21 +1,22 @@
 <script lang="ts">
 	import type { Recipe } from '$lib/Recipe';
 	import { supabase } from '$lib/supbaseClient';
+	import { Option } from 'effect';
 	import { Card, CardHeader, CardTitle } from './ui/card';
 
-	export let recipe: Recipe;
+	export let recipe: typeof Recipe.Type;
 </script>
 
 <Card class="overflow-clip">
-	<img
-		src={recipe.image
-			? supabase.storage.from('recipe-images').getPublicUrl(recipe.image).data.publicUrl
-			: `https://loremflickr.com/400/400/meal,dish?random=${Math.random()}`}
-		alt=""
-		width="400"
-		height="400"
-		class="aspect-square object-cover"
-	/>
+	{#if Option.isSome(recipe.image)}
+		<img
+			src={supabase.storage.from('recipe-images').getPublicUrl(recipe.image.value).data.publicUrl}
+			alt=""
+			width="400"
+			height="400"
+			class="aspect-square object-cover"
+		/>
+	{/if}
 	<CardHeader>
 		<CardTitle>{recipe.title}</CardTitle>
 	</CardHeader>

@@ -1,5 +1,5 @@
 import * as cheerio from 'cheerio';
-import { decodeRecipe } from './StructuredData';
+import * as StructuredData from './StructuredData';
 import { Schema } from '@effect/schema';
 import { Array, Match, Option, Predicate } from 'effect';
 
@@ -14,12 +14,14 @@ export const RecipeSection = Schema.TaggedStruct('RecipeSection', {
 });
 
 export const Recipe = Schema.Struct({
+	id: Schema.String,
 	title: Schema.String,
 	url: Schema.String,
-	image: Schema.String.pipe(Schema.optionalWith({ as: 'Option' })),
-	instructions: Schema.Array(RecipeSection).pipe(Schema.optionalWith({ as: 'Option' })),
+	image: Schema.String.pipe(Schema.OptionFromNullOr),
+	instructions: Schema.Array(RecipeSection).pipe(Schema.OptionFromNullOr),
 });
 export const encodeRecipe = Schema.encodeUnknownSync(Recipe);
+export const decodeRecipe = Schema.decodeUnknownSync(Recipe);
 
 // TODO: investigate security implications of just visiting and downloading any URL the user gives us.
 
@@ -114,7 +116,7 @@ const extractRecipe = (sourceURL: string, object: Record<string, unknown>): type
 	const url = str(object, 'mainEntityOfPage', str(object, '@id', sourceURL));
 	const image = Option.fromNullable(img(object, 'image'));
 
-	const recipe = decodeRecipe(object);
+	const recipe = StructuredData.decodeRecipe(object);
 	console.dir(recipe, { depth: Infinity });
 	const instructions = recipe.recipeInstructions.pipe(
 		Option.andThen((items) =>
@@ -141,5 +143,5 @@ const extractRecipe = (sourceURL: string, object: Record<string, unknown>): type
 		),
 	);
 
-	return Recipe.make({ title: recipe.name, url, image, instructions });
+	return Recipe.make({ id: crypto.randomUUID(), title: recipe.name, url, image, instructions });
 };
