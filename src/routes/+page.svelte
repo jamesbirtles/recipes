@@ -29,4 +29,4 @@
 	<Button href="/import"><ImportIcon class="mr-4 h-4 w-4" /> Import Recipe</Button>
 </div>
 
-<pre class="mt-48">{JSON.stringify(recipes, null, 2)}</pre>
+<!-- <pre class="mt-48">{JSON.stringify(recipes, null, 2)}</pre> -->

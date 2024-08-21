@@ -4,10 +4,17 @@
 	import { supabase } from '$lib/supbaseClient.js';
 	import { Option } from 'effect';
 	import ArrowLeftIcon from 'lucide-svelte/icons/arrow-left';
+	import RecipeSectionView from './RecipeSectionView.svelte';
+	import ExternalLinkIcon from 'lucide-svelte/icons/external-link';
 
 	export let data;
 
 	$: recipe = decodeRecipe(data.recipe);
+
+	const friendlyURL = (urlString: string) => {
+		const url = new URL(urlString);
+		return url.host + url.pathname;
+	};
 </script>
 
 <svelte:head>
@@ -19,21 +26,50 @@
 	Back
 </Button>
 
-{#if Option.isSome(recipe.image)}
-	<img
-		src={supabase.storage.from('recipe-images').getPublicUrl(recipe.image.value).data.publicUrl}
-		width={400}
-		height={400}
-		alt=""
-		class="mb-8 h-96 w-96 rounded-lg object-cover shadow"
-		style:view-transition-name="recipe-image-{recipe.id}"
-	/>
+<div class="flex gap-8">
+	{#if Option.isSome(recipe.image)}
+		<img
+			src={supabase.storage.from('recipe-images').getPublicUrl(recipe.image.value).data.publicUrl}
+			width={320}
+			height={320}
+			alt=""
+			class="mb-8 h-80 w-80 rounded-lg object-cover shadow"
+			style:view-transition-name="recipe-image-{recipe.id}"
+		/>
+	{/if}
+
+	<div class="flex flex-col gap-2">
+		<h3 class="scroll-m-20 text-2xl font-semibold tracking-tight">
+			{recipe.title}
+		</h3>
+		<div class="flex items-center gap-2">
+			<ExternalLinkIcon class="h-3.5 w-3.5" />
+			<a
+				href={recipe.url}
+				target="_blank"
+				rel="noopener noreferrer"
+				class="text-sm text-primary underline"
+			>
+				{friendlyURL(recipe.url)}
+			</a>
+		</div>
+	</div>
+</div>
+
+{#if Option.isSome(recipe.instructions)}
+	{#each recipe.instructions.value as section}
+		<RecipeSectionView {section} />
+	{/each}
+{:else}
+	<p class="italic">
+		We couldn't find any instructions for this recipe. You might be able to view them manually on
+		the <a
+			class="text-primary underline"
+			target="_blank"
+			rel="noopener noreferrer"
+			href={recipe.url}>original URL</a
+		>.
+	</p>
 {/if}
 
-<h1
-	class="mb-8 scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight transition-colors first:mt-0"
->
-	{recipe.title}
-</h1>
-
-<pre>{JSON.stringify(recipe, null, 2)}</pre>
+<!-- <pre class="mt-16">{JSON.stringify(recipe, null, 2)}</pre> -->
