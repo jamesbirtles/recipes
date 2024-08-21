@@ -4,8 +4,18 @@ export type Recipe = {
 	title: string;
 	url: string;
 	image: string | null;
+	instructions: RecipeInstructions | null;
 	// TODO: remove
 	raw: unknown;
+};
+
+export type RecipeInstructions = {
+	title?: string;
+	steps: RecipeStep[];
+};
+
+export type RecipeStep = {
+	text: string;
 };
 
 // TODO: investigate security implications of just visiting and downloading any URL the user gives us.
@@ -99,5 +109,5 @@ const extractRecipe = (sourceURL: string, object: Record<string, unknown>): Reci
 	const title = str(object, 'name', 'Unnamed');
 	const url = str(object, 'mainEntityOfPage', str(object, '@id', sourceURL));
 	const image = img(object, 'image');
-	return { title, url, image, raw: object };
+	return { title, url, image, instructions: null, raw: object };
 };
