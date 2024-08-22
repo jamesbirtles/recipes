@@ -1,6 +1,6 @@
 # Recipe App
 
-Currently this is a small SvelteKit app that supports importing recipes from a URL which you can then browser and follow.
+Currently this is a small SvelteKit app that supports importing recipes from a URL which you can then browse and follow.
 
 ## Screenshots
 
