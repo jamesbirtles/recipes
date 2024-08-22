@@ -1,8 +1,13 @@
 import { redirect } from '@sveltejs/kit';
 
-export const load = async ({ locals: { supabase } }) => {
-	const result = await supabase.from('recipes').select().order('created_at');
-	return { recipes: result.data ?? [] };
+export const load = async ({ url, locals: { supabase } }) => {
+	const query = url.searchParams.get('query')?.trim();
+	let dbQuery = supabase.from('recipes').select().order('created_at');
+	if (query) {
+		dbQuery = dbQuery.textSearch('title', query, { type: 'websearch' });
+	}
+	const result = await dbQuery;
+	return { recipes: result.data ?? [], query };
 };
 
 export const actions = {

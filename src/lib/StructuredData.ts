@@ -6,7 +6,12 @@ import { Schema } from '@effect/schema';
  */
 const String = Schema.transform(Schema.String, Schema.String, {
 	strict: true,
-	decode: (s) => s.replaceAll('&#39;', "'").replaceAll('&quot;', '"').replaceAll('&amp;', '&'),
+	decode: (s) =>
+		s
+			.replaceAll('&#39;', "'")
+			.replaceAll('&quot;', '"')
+			.replaceAll('&amp;', '&')
+			.replaceAll('&#x27;', "'"),
 	encode: (s) => s,
 });
 

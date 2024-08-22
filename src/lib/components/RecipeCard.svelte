@@ -8,7 +8,7 @@
 </script>
 
 <a class="contents" href="/recipes/{recipe.id}">
-	<Card class="overflow-clip">
+	<Card class="overflow-clip" style="view-transition-name:recipe-card-{recipe.id};">
 		{#if Option.isSome(recipe.image)}
 			<img
 				src={$page.data.supabase.storage.from('recipe-images').getPublicUrl(recipe.image.value).data

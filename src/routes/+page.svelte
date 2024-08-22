@@ -1,6 +1,7 @@
 <script lang="ts">
 	import RecipeCard from '$lib/components/RecipeCard.svelte';
 	import { Button } from '$lib/components/ui/button';
+	import { Input } from '$lib/components/ui/input';
 	import { decodeRecipe } from '$lib/Recipe.js';
 	import ImportIcon from 'lucide-svelte/icons/import';
 	import LogoutIcon from 'lucide-svelte/icons/log-out';
@@ -24,6 +25,20 @@
 		</Button>
 	</form>
 </div>
+
+<form method="get" class="mb-6">
+	<Input
+		type="search"
+		id="query"
+		name="query"
+		value={data.query}
+		placeholder="Search your recipes…"
+	/>
+</form>
+
+{#if data.query}
+	<h2 class="mb-4 text-xl text-muted-foreground">Showing results for '{data.query}':</h2>
+{/if}
 
 <div class="grid gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
 	{#each recipes as recipe (recipe.id)}
