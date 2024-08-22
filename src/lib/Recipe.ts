@@ -29,10 +29,7 @@ export const decodeRecipe = Schema.decodeUnknownSync(Recipe);
 
 // TODO: investigate security implications of just visiting and downloading any URL the user gives us.
 
-export const importRecipe = async (
-	supabase: SupabaseClient,
-	url: string,
-): Promise<typeof NewRecipe.Type | null> => {
+export const importRecipe = async (url: string): Promise<typeof NewRecipe.Type | null> => {
 	const result = await fetch(url, {
 		headers: { accept: 'text/html' },
 	});
@@ -54,13 +51,7 @@ export const importRecipe = async (
 
 	const ld = tryParse(ldjson);
 	const recipe = findRecipe(url, ld);
-	if (!recipe) return null;
-
-	const image = Option.isSome(recipe.image)
-		? Option.some(await updateRecipeImage(supabase, recipe.id, recipe.image.value))
-		: Option.none();
-
-	return { ...recipe, image };
+	return recipe;
 };
 
 const tryParse = (value: string): Record<string, unknown>[] => {
@@ -129,14 +120,11 @@ const extractRecipe = (
 	sourceURL: string,
 	object: Record<string, unknown>,
 ): typeof NewRecipe.Type => {
-	console.dir(object, { depth: Infinity });
-
 	// TODO: use effect schema to extract these
 	const url = str(object, 'mainEntityOfPage', str(object, '@id', sourceURL));
 	const image = Option.fromNullable(img(object, 'image'));
 
 	const recipe = StructuredData.decodeRecipe(object);
-	console.dir(recipe, { depth: Infinity });
 	const instructions = recipe.recipeInstructions.pipe(
 		Option.andThen((items) =>
 			Match.value(items).pipe(
@@ -172,7 +160,12 @@ const extractRecipe = (
 	};
 };
 
-const updateRecipeImage = async (supabase: SupabaseClient, recipeID: string, imageURL: string) => {
+export const uploadRecipeImage = async (
+	supabase: SupabaseClient,
+	userID: string,
+	recipeID: string,
+	imageURL: string,
+) => {
 	const imageResponse = await fetch(imageURL, { headers: { accept: 'image/*' } });
 	// TODO: some amount of validation that the image response was valid
 	const contentType = imageResponse.headers.get('content-type') ?? 'image/jpeg';
@@ -180,7 +173,7 @@ const updateRecipeImage = async (supabase: SupabaseClient, recipeID: string, ima
 
 	const { data, error } = await supabase.storage
 		.from('recipe-images')
-		.upload(`recipes/${recipeID}/image.jpg`, imageData, { contentType });
+		.upload(`${userID}/${recipeID}.jpg`, imageData, { contentType, upsert: true });
 	if (error) {
 		console.error('Failed to upload image to bucket', error);
 		throw error;

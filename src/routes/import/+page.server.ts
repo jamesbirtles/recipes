@@ -1,5 +1,6 @@
-import { encodeRecipe, importRecipe } from '$lib/Recipe.js';
+import { encodeRecipe, importRecipe, uploadRecipeImage } from '$lib/Recipe.js';
 import { fail, redirect, error } from '@sveltejs/kit';
+import { Option } from 'effect';
 
 export const actions = {
 	async default({ request, locals: { supabase, user } }) {
@@ -10,14 +11,18 @@ export const actions = {
 			return fail(400, { status: 'error', message: 'Recipe URL missing or invalid' });
 		}
 
-		const recipe = await importRecipe(supabase, recipeURL);
+		const recipe = await importRecipe(recipeURL);
 		if (recipe == null) {
 			return fail(400, { status: 'error', message: 'Recipe not found in page' });
 		}
 
+		const image = Option.isSome(recipe.image)
+			? Option.some(await uploadRecipeImage(supabase, user.id, recipe.id, recipe.image.value))
+			: Option.none();
+
 		const result = await supabase
 			.from('recipes')
-			.insert(encodeRecipe({ ...recipe, user_id: user.id }));
+			.insert(encodeRecipe({ ...recipe, user_id: user.id, image }));
 		if (result.error) {
 			console.error('Failed to insert recipe', result.error);
 			return fail(500, {

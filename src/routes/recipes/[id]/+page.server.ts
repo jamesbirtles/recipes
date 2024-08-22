@@ -1,5 +1,6 @@
-import { decodeRecipe, encodeRecipe, importRecipe, Recipe } from '$lib/Recipe.js';
+import { decodeRecipe, encodeRecipe, importRecipe, uploadRecipeImage } from '$lib/Recipe.js';
 import { fail } from '@sveltejs/kit';
+import { Option } from 'effect';
 
 export const load = async ({ params, locals: { supabase } }) => {
 	const result = await supabase.from('recipes').select().eq('id', params.id).limit(1).single();
@@ -11,21 +12,40 @@ export const actions = {
 		const result = await supabase.from('recipes').select().eq('id', params.id).limit(1).single();
 		const existingRecipe = decodeRecipe(result.data);
 
-		const recipe = await importRecipe(supabase, existingRecipe.url);
+		const recipe = await importRecipe(existingRecipe.url);
 		if (recipe == null) {
 			return fail(400, { status: 'error', message: 'Recipe not found in page' });
 		}
 
+		const image = Option.isSome(recipe.image)
+			? Option.some(
+					await uploadRecipeImage(
+						supabase,
+						existingRecipe.user_id,
+						existingRecipe.id,
+						recipe.image.value,
+					),
+				)
+			: Option.none();
+
+		console.log(
+			encodeRecipe({
+				...recipe,
+				id: existingRecipe.id,
+				user_id: existingRecipe.user_id,
+				image,
+			}),
+		);
+
 		const { error } = await supabase
 			.from('recipes')
 			.update(
-				encodeRecipe(
-					Recipe.make({
-						...recipe,
-						id: existingRecipe.id,
-						user_id: existingRecipe.user_id,
-					}),
-				),
+				encodeRecipe({
+					...recipe,
+					id: existingRecipe.id,
+					user_id: existingRecipe.user_id,
+					image,
+				}),
 			)
 			.eq('id', existingRecipe.id);
 		if (error) {
