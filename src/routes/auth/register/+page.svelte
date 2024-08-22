@@ -13,8 +13,8 @@
 
 <Card class="mx-auto my-12 max-w-sm">
 	<CardHeader>
-		<CardTitle class="text-2xl">Login</CardTitle>
-		<CardDescription>Enter your email below to login to your account</CardDescription>
+		<CardTitle class="text-2xl">Sign Up</CardTitle>
+		<CardDescription>Enter your email below to sign up for any account</CardDescription>
 	</CardHeader>
 	<CardContent>
 		<form method="post" class="grid gap-4">
@@ -25,15 +25,14 @@
 			<div class="grid gap-2">
 				<div class="flex items-center">
 					<Label for="password">Password</Label>
-					<!-- <a href="##" class="ml-auto inline-block text-sm underline"> Forgot your password? </a> -->
 				</div>
 				<Input id="password" name="password" type="password" required />
 			</div>
-			<Button type="submit" class="w-full">Login</Button>
+			<Button type="submit" class="w-full">Sign Up</Button>
 		</form>
 		<div class="mt-4 text-center text-sm">
-			Don't have an account?
-			<a href="/auth/register" class="underline">Sign up</a>
+			Already have an account?
+			<a href="/auth" class="underline">Sign in</a>
 		</div>
 	</CardContent>
 </Card>
