@@ -116,6 +116,15 @@ const img = (object: Record<string, unknown>, key: string): string | null => {
 	return Array.isArray(value) ? get(value[0]) : get(value);
 };
 
+const howToStepToRecipeStep = (step: typeof StructuredData.HowToStep.Type) =>
+	RecipeStep.make({
+		title: step.name.pipe(
+			// Some sites set these to the same, which is undesirable
+			Option.filter((name) => name !== step.text),
+		),
+		text: step.text,
+	});
+
 const extractRecipe = (
 	sourceURL: string,
 	object: Record<string, unknown>,
@@ -131,18 +140,18 @@ const extractRecipe = (
 				Match.when(Array.every(Predicate.isString), () => {
 					throw new Error('String-only recipe instructions not yet supported');
 				}),
-				Match.when(Array.every(Predicate.isTagged('HowToSection')), () => {
-					throw new Error('HowToSection recipe instructions not yet supported');
-				}),
+				Match.when(Array.every(Predicate.isTagged('HowToSection')), (sections) =>
+					sections.map((section, index) =>
+						RecipeSection.make({
+							title: section.name.pipe(Option.getOrElse(() => `Section ${index + 1}`)),
+							steps: section.itemListElement.map((step) => howToStepToRecipeStep(step)),
+						}),
+					),
+				),
 				Match.when(Array.every(Predicate.isTagged('HowToStep')), (steps) => [
 					RecipeSection.make({
 						title: 'Method',
-						steps: steps.map((step) =>
-							RecipeStep.make({
-								title: Option.none(),
-								text: step.text,
-							}),
-						),
+						steps: steps.map((step) => howToStepToRecipeStep(step)),
 					}),
 				]),
 				Match.exhaustive,
