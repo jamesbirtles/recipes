@@ -3,6 +3,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { decodeRecipe } from '$lib/Recipe.js';
 	import ImportIcon from 'lucide-svelte/icons/import';
+	import LogoutIcon from 'lucide-svelte/icons/log-out';
 
 	export let data;
 
@@ -13,11 +14,16 @@
 	<title>Recipes</title>
 </svelte:head>
 
-<h1
-	class="mb-8 scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight transition-colors first:mt-0"
->
-	Saved Recipes
-</h1>
+<div class="mb-8 flex h-16 items-center gap-4 border-b">
+	<h1 class="scroll-m-20 text-3xl font-semibold tracking-tight transition-colors">Saved Recipes</h1>
+	<form method="post" action="?/logout" class="ml-auto">
+		{data.user?.email}
+		<Button type="submit" size="sm" variant="secondary" class="ml-4">
+			Logout
+			<LogoutIcon class="ml-2 h-4 w-4" />
+		</Button>
+	</form>
+</div>
 
 <div class="grid gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
 	{#each recipes as recipe (recipe.id)}
@@ -33,4 +39,4 @@
 	</Button>
 </div>
 
-<!-- <pre class="mt-48">{JSON.stringify(recipes, null, 2)}</pre> -->
+<!-- <pre class="mt-48">{JSON.stringify(data.user, null, 2)}</pre> -->
