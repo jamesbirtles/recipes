@@ -143,7 +143,10 @@ const extractRecipe = (
 				Match.when(Array.every(Predicate.isTagged('HowToSection')), (sections) =>
 					sections.map((section, index) =>
 						RecipeSection.make({
-							title: section.name.pipe(Option.getOrElse(() => `Section ${index + 1}`)),
+							title: section.name.pipe(
+								Option.andThen((text) => text.replace(/\s*[:-]\s*$/, '')),
+								Option.getOrElse(() => `Section ${index + 1}`),
+							),
 							steps: section.itemListElement.map((step) => howToStepToRecipeStep(step)),
 						}),
 					),
