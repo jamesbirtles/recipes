@@ -7,7 +7,7 @@
 	export let recipe: typeof Recipe.Type;
 </script>
 
-<a class="contents" href="/recipes/{recipe.id}">
+<a class="contents" href="/recipes/{recipe.id}?return">
 	<Card class="overflow-clip">
 		{#if Option.isSome(recipe.image)}
 			<img

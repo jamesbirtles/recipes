@@ -5,7 +5,7 @@
 
 	export let href: string;
 
-	$: skipBack = $page.url.searchParams.has('imported');
+	$: shouldReturn = $page.url.searchParams.has('return');
 </script>
 
 <Button
@@ -13,7 +13,7 @@
 	{href}
 	class="mb-6 self-start"
 	on:click={(evt) => {
-		if (!skipBack) {
+		if (shouldReturn) {
 			evt.preventDefault();
 			window.history.back();
 		}

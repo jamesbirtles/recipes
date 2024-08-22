@@ -24,7 +24,7 @@
 	<title>Import Recipe</title>
 </svelte:head>
 
-<div class="mx-auto flex max-w-xl flex-col items-center">
+<div class="mx-auto flex max-w-xl flex-col items-center p-6">
 	<BackButton href="/" />
 
 	<CookingPotIcon class="mb-4 h-16 w-16" />

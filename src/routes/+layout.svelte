@@ -32,6 +32,4 @@
 
 <Toaster />
 
-<div class="mx-auto max-w-screen-xl p-6">
-	<slot></slot>
-</div>
+<slot></slot>
