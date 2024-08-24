@@ -13,14 +13,11 @@
 		PaginationLink,
 		PaginationNextButton,
 	} from '$lib/components/ui/pagination';
-	import { decodeRecipe } from '$lib/Recipe.js';
 	import { ChevronLeft, ChevronRight } from 'lucide-svelte';
 	import ImportIcon from 'lucide-svelte/icons/import';
 	import LogoutIcon from 'lucide-svelte/icons/log-out';
 
 	export let data;
-
-	$: recipes = data.recipes.map((item) => decodeRecipe(item));
 </script>
 
 <svelte:head>
@@ -56,7 +53,7 @@
 	{/if}
 
 	<div class="grid gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-		{#each recipes as recipe (recipe.id)}
+		{#each data.recipes as recipe (recipe.id)}
 			<RecipeCard {recipe} />
 		{/each}
 	</div>
