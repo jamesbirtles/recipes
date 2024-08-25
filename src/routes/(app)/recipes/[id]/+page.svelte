@@ -6,6 +6,7 @@
 	import IngredientsList from './IngredientsList.svelte';
 	import ImportIcon from 'lucide-svelte/icons/refresh-cw';
 	import ChefHatIcon from 'lucide-svelte/icons/chef-hat';
+	import ListPlusIcon from 'lucide-svelte/icons/list-plus';
 	import type { ActionResult } from '@sveltejs/kit';
 	import { toast } from 'svelte-sonner';
 	import { enhance } from '$app/forms';
@@ -83,6 +84,11 @@
 				>
 					<Button type="submit" variant="outline">
 						<ImportIcon class={twMerge('mr-4 h-4 w-4', reimporting && 'animate-spin')} /> Sync Latest
+					</Button>
+				</form>
+				<form method="post" class="contents" action="?/addToShoppingList" use:enhance>
+					<Button type="submit" variant="outline">
+						<ListPlusIcon class="mr-4 h-4 w-4" /> Add Ingredients to Shopping List
 					</Button>
 				</form>
 				<Button href="/recipes/{recipe.id}/follow">
