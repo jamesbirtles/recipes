@@ -1,8 +1,4 @@
-import * as cheerio from 'cheerio';
-import * as StructuredData from './StructuredData';
 import { Schema } from '@effect/schema';
-import { Array, Match, Option, Predicate } from 'effect';
-import type { SupabaseClient } from '@supabase/supabase-js';
 
 export const RecipeStep = Schema.TaggedStruct('RecipeStep', {
 	title: Schema.String.pipe(Schema.optionalWith({ as: 'Option' })),
@@ -14,6 +10,46 @@ export const RecipeSection = Schema.TaggedStruct('RecipeSection', {
 	steps: Schema.Array(RecipeStep),
 });
 
+export const Ingredient = Schema.Struct({
+	quantity: Schema.Number.pipe(
+		Schema.annotations({
+			title: 'Quantity',
+			description:
+				'Total number of units specified, converting any fractions into decimals up to 2 decimal places',
+		}),
+		Schema.OptionFromNullOr,
+	),
+	unit: Schema.String.pipe(
+		Schema.annotations({
+			title: 'Units',
+			description: 'Unit of measurement, e.g. tbsp, cups, thumb-sized, small, piece etc',
+		}),
+		Schema.OptionFromNullOr,
+	),
+	name: Schema.String.pipe(
+		Schema.annotations({
+			title: 'Item Name',
+			// description: 'Name of the ingredient as it would be on the packaging in the supermarket',
+			description: 'Full name of the ingredient',
+		}),
+	),
+	preparation: Schema.String.pipe(
+		Schema.annotations({
+			title: 'Preparation',
+			description: 'How the item is prepped, e.g. chopped, finely sliced, diced, etc',
+		}),
+		Schema.OptionFromNullOr,
+	),
+	hint: Schema.String.pipe(
+		Schema.annotations({
+			title: 'Extra Information',
+			description:
+				'Any miscellaneous information or hints such as possible substitutions, recommended brands, or other advice stated.',
+		}),
+		Schema.OptionFromNullOr,
+	),
+}).pipe(Schema.annotations({ title: 'Ingredient', description: 'Ingredient for a recipe' }));
+
 export const Recipe = Schema.Struct({
 	id: Schema.String,
 	user_id: Schema.String,
@@ -21,175 +57,9 @@ export const Recipe = Schema.Struct({
 	url: Schema.String,
 	image: Schema.String.pipe(Schema.OptionFromNullOr),
 	instructions: Schema.Array(RecipeSection).pipe(Schema.OptionFromNullOr),
-	ingredients: Schema.Array(Schema.String),
+	ingredients: Schema.Array(Ingredient),
+	original_ingredients: Schema.Array(Schema.String),
 });
 export const NewRecipe = Recipe.pipe(Schema.omit('user_id'));
 export const encodeRecipe = Schema.encodeUnknownSync(Recipe);
 export const decodeRecipe = Schema.decodeUnknownSync(Recipe);
-
-// TODO: investigate security implications of just visiting and downloading any URL the user gives us.
-
-export const importRecipe = async (url: string): Promise<typeof NewRecipe.Type | null> => {
-	const result = await fetch(url, {
-		headers: { accept: 'text/html' },
-	});
-	if (result.status != 200) {
-		throw new Error('Recipe URL responded with a non 200 status code');
-	}
-
-	const contentType = result.headers.get('Content-Type');
-	if (!contentType?.startsWith('text/html')) {
-		throw new Error('Expected recipe to return text/html content.');
-	}
-
-	const html = await result.text();
-	const select = cheerio.load(html);
-	const ldjson = select('script[type=application/ld+json]').text().trim();
-	if (!ldjson) {
-		throw new Error('Page does not contain any metadata');
-	}
-
-	const ld = tryParse(ldjson);
-	const recipe = findRecipe(url, ld);
-	return recipe;
-};
-
-const tryParse = (value: string): Record<string, unknown>[] => {
-	try {
-		// Kind of an ugly hack to parse back-to-back json objects. Maybe should look into
-		// a better parser..
-		return JSON.parse('[' + value.replace(/\}\{/g, '},{') + ']');
-	} catch {
-		throw new Error('Page metadata is not valid JSON');
-	}
-};
-
-// I'm sort of tempted to try and bring in something like Effect-ts Schema to parse this data,
-// in rust I would probably be using serde
-const findRecipe = (
-	url: string,
-	objects: Record<string, unknown>[],
-): typeof NewRecipe.Type | null => {
-	for (const object of objects) {
-		const type = object['@type'];
-		if (type === 'Recipe') {
-			return extractRecipe(url, object);
-		}
-
-		const graph = object['@graph'];
-		if (Array.isArray(graph)) {
-			const recipe = findRecipe(url, graph as Record<string, unknown>[]);
-			if (recipe != null) return recipe;
-		}
-	}
-
-	return null;
-};
-
-const str = <T>(
-	object: Record<string | number, unknown> | unknown[],
-	key: string | number,
-	fallback: T,
-): string | T => {
-	const value = (object as Record<string | number, unknown>)[key];
-	if (typeof value === 'string') {
-		return value;
-	}
-	return fallback;
-};
-
-const img = (object: Record<string, unknown>, key: string): string | null => {
-	const get = (value: unknown) => {
-		if (value == null) {
-			return null;
-		}
-		if (typeof value === 'string') {
-			return value;
-		}
-		if (typeof value === 'object' && '@type' in value && value['@type'] === 'ImageObject') {
-			return str(value, 'url', null);
-		}
-		return null;
-	};
-
-	const value = object[key];
-	return Array.isArray(value) ? get(value[0]) : get(value);
-};
-
-const howToStepToRecipeStep = (step: typeof StructuredData.HowToStep.Type) =>
-	RecipeStep.make({
-		title: step.name.pipe(
-			// Some sites set these to the same, which is undesirable
-			Option.filter((name) => name !== step.text),
-		),
-		text: step.text,
-	});
-
-const extractRecipe = (
-	sourceURL: string,
-	object: Record<string, unknown>,
-): typeof NewRecipe.Type => {
-	// TODO: use effect schema to extract these
-	const url = str(object, 'mainEntityOfPage', str(object, '@id', sourceURL));
-	const image = Option.fromNullable(img(object, 'image'));
-
-	const recipe = StructuredData.decodeRecipe(object);
-	const instructions = recipe.recipeInstructions.pipe(
-		Option.andThen((items) =>
-			Match.value(items).pipe(
-				Match.when(Array.every(Predicate.isString), () => {
-					throw new Error('String-only recipe instructions not yet supported');
-				}),
-				Match.when(Array.every(Predicate.isTagged('HowToSection')), (sections) =>
-					sections.map((section, index) =>
-						RecipeSection.make({
-							title: section.name.pipe(
-								Option.andThen((text) => text.replace(/\s*[:-]\s*$/, '')),
-								Option.getOrElse(() => `Section ${index + 1}`),
-							),
-							steps: section.itemListElement.map((step) => howToStepToRecipeStep(step)),
-						}),
-					),
-				),
-				Match.when(Array.every(Predicate.isTagged('HowToStep')), (steps) => [
-					RecipeSection.make({
-						title: 'Method',
-						steps: steps.map((step) => howToStepToRecipeStep(step)),
-					}),
-				]),
-				Match.exhaustive,
-			),
-		),
-	);
-
-	return {
-		id: crypto.randomUUID(),
-		title: recipe.name,
-		url,
-		image,
-		instructions,
-		ingredients: recipe.recipeIngredient,
-	};
-};
-
-export const uploadRecipeImage = async (
-	supabase: SupabaseClient,
-	userID: string,
-	recipeID: string,
-	imageURL: string,
-) => {
-	const imageResponse = await fetch(imageURL, { headers: { accept: 'image/*' } });
-	// TODO: some amount of validation that the image response was valid
-	const contentType = imageResponse.headers.get('content-type') ?? 'image/jpeg';
-	const imageData = await imageResponse.arrayBuffer();
-
-	const { data, error } = await supabase.storage
-		.from('recipe-images')
-		.upload(`${userID}/${recipeID}.jpg`, imageData, { contentType, upsert: true });
-	if (error) {
-		console.error('Failed to upload image to bucket', error);
-		throw error;
-	}
-
-	return data!.path;
-};

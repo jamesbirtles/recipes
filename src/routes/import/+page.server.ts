@@ -1,4 +1,5 @@
-import { encodeRecipe, importRecipe, uploadRecipeImage } from '$lib/Recipe.js';
+import { encodeRecipe } from '$lib/Recipe.js';
+import { importRecipe, uploadRecipeImage } from '$lib/Recipe.server';
 import { fail, redirect, error } from '@sveltejs/kit';
 import { Option } from 'effect';
 

@@ -93,7 +93,10 @@
 		</div>
 
 		<div>
-			<IngredientsList ingredients={recipe.ingredients} />
+			<IngredientsList
+				ingredients={recipe.ingredients}
+				originalIngredients={recipe.original_ingredients}
+			/>
 		</div>
 		<div>
 			{#if Option.isSome(recipe.instructions)}
