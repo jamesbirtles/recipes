@@ -13,7 +13,6 @@ export const load = async ({ url, locals: { supabase } }) => {
 		dbQuery = dbQuery.textSearch('title', query, { type: 'websearch' });
 	}
 	const result = await dbQuery;
-	console.log(result);
 	return { recipes: result.data ?? [], query, count: result.count!, pageSize, page };
 };
 

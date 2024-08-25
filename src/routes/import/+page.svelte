@@ -12,7 +12,6 @@
 		if (result.type === 'failure') {
 			toast.error((result.data?.message as string | undefined) ?? 'Something went wrong');
 		} else if (result.type === 'success') {
-			console.log(result.data);
 			toast.success('Recipe successfully imported!');
 		}
 	};

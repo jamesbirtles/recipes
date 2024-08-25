@@ -29,15 +29,6 @@ export const actions = {
 				)
 			: Option.none();
 
-		console.log(
-			encodeRecipe({
-				...recipe,
-				id: existingRecipe.id,
-				user_id: existingRecipe.user_id,
-				image,
-			}),
-		);
-
 		const { error } = await supabase
 			.from('recipes')
 			.update(
