@@ -93,6 +93,7 @@
 		</div>
 
 		<div>
+			<h3 class="scroll-m-20 text-xl font-semibold tracking-tight">Ingredients</h3>
 			<IngredientsList
 				ingredients={recipe.ingredients}
 				originalIngredients={recipe.original_ingredients}
