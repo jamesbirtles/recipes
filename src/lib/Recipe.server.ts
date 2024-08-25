@@ -4,7 +4,7 @@ import { Array, Match, Option, Predicate } from 'effect';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { createOpenAI } from '@ai-sdk/openai';
 import { JSONSchema, Schema } from '@effect/schema';
-import { Ingredient, NewRecipe, RecipeSection, RecipeStep } from './Recipe';
+import { encodeIngredient, Ingredient, NewRecipe, RecipeSection, RecipeStep } from './Recipe';
 import { jsonSchema, streamObject } from 'ai';
 import { Chunk, Effect, Stream } from 'effect';
 import { OPEN_AI_KEY } from '$env/static/private';
@@ -198,6 +198,41 @@ const extractIngredients = (ingredients: readonly string[]) =>
 					content: 'Convert the list of ingredients into the given format.',
 				},
 				{ role: 'user', content: JSON.stringify(ingredients) },
+			],
+		}),
+	).pipe(
+		Effect.andThen(({ elementStream }) =>
+			Stream.fromAsyncIterable(elementStream, (e) => e as Error).pipe(
+				Stream.mapEffect(parseIngredient),
+				Stream.runCollect,
+			),
+		),
+		Effect.andThen(Chunk.toArray),
+	);
+
+export const ingredientsForStep = (
+	ingredients: readonly (typeof Ingredient.Type)[],
+	step: string,
+) =>
+	Effect.tryPromise(() =>
+		streamObject({
+			model,
+			output: 'array',
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			schema: jsonSchema(IngredientJSONSchema as any),
+			messages: [
+				{
+					role: 'system',
+					content:
+						'Filter the list of ingredients provided to only those that are used in the method.',
+				},
+				{
+					role: 'user',
+					content: JSON.stringify({
+						method: step,
+						ingredients: ingredients.map((i) => encodeIngredient(i)),
+					}),
+				},
 			],
 		}),
 	).pipe(

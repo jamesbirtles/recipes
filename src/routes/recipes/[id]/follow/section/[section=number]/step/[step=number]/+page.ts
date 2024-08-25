@@ -1,7 +1,8 @@
+import { decodeIngredient } from '$lib/Recipe';
 import { error } from '@sveltejs/kit';
 import { Option, Array } from 'effect';
 
-export const load = async ({ params, parent }) => {
+export const load = async ({ data: pageData, params, parent }) => {
 	const data = await parent();
 
 	const sectionIndex = Number(params.section) - 1;
@@ -49,5 +50,14 @@ export const load = async ({ params, parent }) => {
 		Option.getOrElse(() => `/recipes/${data.recipe.id}/follow`),
 	);
 
-	return { section, step, stepNumber: stepIndex + 1, nextStepHref, prevStepHref };
+	return {
+		section,
+		step,
+		stepNumber: stepIndex + 1,
+		nextStepHref,
+		prevStepHref,
+		relatedIngredients: pageData.relatedIngredients.then((ingredients) =>
+			ingredients.map((i) => decodeIngredient(i)),
+		),
+	};
 };

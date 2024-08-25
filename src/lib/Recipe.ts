@@ -49,6 +49,8 @@ export const Ingredient = Schema.Struct({
 		Schema.OptionFromNullOr,
 	),
 }).pipe(Schema.annotations({ title: 'Ingredient', description: 'Ingredient for a recipe' }));
+export const decodeIngredient = Schema.decodeUnknownSync(Ingredient);
+export const encodeIngredient = Schema.encodeUnknownSync(Ingredient);
 
 export const Recipe = Schema.Struct({
 	id: Schema.String,
