@@ -1,4 +1,4 @@
-import { fail } from '@sveltejs/kit';
+import { error, fail } from '@sveltejs/kit';
 
 export const load = async ({ locals: { supabase }, depends }) => {
 	depends('supabase:shopping_list_items');
@@ -26,6 +26,12 @@ export const actions = {
 		});
 		if (error) {
 			throw error;
+		}
+	},
+	clearChecked: async ({ locals: { supabase } }) => {
+		const result = await supabase.rpc('clearCheckedShoppingListItems');
+		if (result.error) {
+			error(500, result.error);
 		}
 	},
 };
