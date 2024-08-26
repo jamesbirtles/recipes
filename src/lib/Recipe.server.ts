@@ -98,14 +98,20 @@ const img = (object: Record<string, unknown>, key: string): string | null => {
 	return Array.isArray(value) ? get(value[0]) : get(value);
 };
 
-const howToStepToRecipeStep = (step: typeof StructuredData.HowToStep.Type) =>
-	RecipeStep.make({
+const howToStepToRecipeStep = (step: typeof StructuredData.HowToStep.Type) => {
+	const text = step.text.pipe(
+		Option.orElse(() => step.description),
+		Option.orElse(() => step.name),
+		Option.getOrThrowWith(() => new Error('Recipe step is missing any text whatsoever')),
+	);
+	return RecipeStep.make({
 		title: step.name.pipe(
 			// Some sites set these to the same, which is undesirable
-			Option.filter((name) => name !== step.text),
+			Option.filter((name) => name !== text),
 		),
-		text: step.text,
+		text,
 	});
+};
 
 const extractRecipe = async (
 	sourceURL: string,

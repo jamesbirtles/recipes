@@ -7,18 +7,21 @@ import { Schema } from '@effect/schema';
 const String = Schema.transform(Schema.String, Schema.String, {
 	strict: true,
 	decode: (s) =>
+		// TODO: maybe bring in a library to do this
 		s
 			.replaceAll('&#39;', "'")
 			.replaceAll('&quot;', '"')
 			.replaceAll('&amp;', '&')
-			.replaceAll('&#x27;', "'"),
+			.replaceAll('&#x27;', "'")
+			.replaceAll('&nbsp;', ' '),
 	encode: (s) => s,
 });
 
 export const HowToStep = Schema.Struct({
 	_tag: Schema.tag('HowToStep').pipe(Schema.fromKey('@type')),
 	name: String.pipe(Schema.optionalWith({ as: 'Option' })),
-	text: String,
+	description: String.pipe(Schema.optionalWith({ as: 'Option' })),
+	text: String.pipe(Schema.optionalWith({ as: 'Option' })),
 	// TODO: support itemListElement - https://developers.google.com/search/docs/appearance/structured-data/recipe#how-to-step
 });
 export const HowToSection = Schema.Struct({
