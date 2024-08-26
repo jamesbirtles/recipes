@@ -56,21 +56,19 @@ export const actions = {
 		const result = await supabase.from('recipes').select().eq('id', params.id).limit(1).single();
 		const recipe = decodeRecipe(result.data);
 
-		const { error } = await supabase.from('shopping_list_items').insert(
-			recipe.ingredients.map((ingredient) => ({
-				name: ingredient.name,
-				unit: ingredient.unit.pipe(Option.getOrNull),
-				quantity: ingredient.quantity.pipe(Option.getOrNull),
-				user_id: user.id,
-			})),
+		await Promise.all(
+			recipe.ingredients.map(async (ingredient) => {
+				const { error } = await supabase.rpc('insertShoppingListItem', {
+					name: ingredient.name,
+					unit: ingredient.unit.pipe(Option.getOrNull),
+					quantity: ingredient.quantity.pipe(Option.getOrNull),
+					user_id: user.id,
+				});
+				if (error) {
+					throw error;
+				}
+			}),
 		);
-		if (error) {
-			console.error('Failed to add items to shopping list', error);
-			return fail(500, {
-				status: 'error',
-				message: 'Something went wrong trying to add items to shopping list',
-			});
-		}
 
 		redirect(307, '/shopping');
 	},

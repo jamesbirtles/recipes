@@ -2,7 +2,7 @@ import { fail } from '@sveltejs/kit';
 
 export const load = async ({ locals: { supabase }, depends }) => {
 	depends('supabase:shopping_list_items');
-	const result = await supabase.from('shopping_list_items').select('*').order('created_at');
+	const result = await supabase.from('shopping_list_items').select('*').order('order');
 	return { items: result.data ?? [] };
 };
 
@@ -18,9 +18,14 @@ export const actions = {
 			return fail(400, { message: 'Invalid item name' });
 		}
 
-		await supabase.from('shopping_list_items').insert({
+		const { error } = await supabase.rpc('insertShoppingListItem', {
 			name: name.trim(),
+			quantity: null,
+			unit: null,
 			user_id: user.id,
 		});
+		if (error) {
+			throw error;
+		}
 	},
 };
