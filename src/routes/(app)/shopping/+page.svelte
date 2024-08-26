@@ -20,8 +20,8 @@
 			}
 		} catch {
 			toast.error('Failed to update shopping list');
+			invalidate('supabase:shopping_list_items');
 		}
-		invalidate('supabase:shopping_list_items');
 	};
 	const updateName = async (id: string, name: string) => {
 		if (name.trim() !== '') {
@@ -35,14 +35,18 @@
 				}
 			} catch {
 				toast.error('Failed to update shopping list');
+				invalidate('supabase:shopping_list_items');
 			}
 		}
-		invalidate('supabase:shopping_list_items');
 	};
 
 	$: uncheckedItems = data.items.filter((item) => !item.checked);
 	$: checkedItems = data.items.filter((item) => item.checked);
 </script>
+
+<svelte:head>
+	<title>Shopping List</title>
+</svelte:head>
 
 <PageHeader title="Shopping List" />
 
