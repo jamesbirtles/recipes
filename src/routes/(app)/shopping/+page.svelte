@@ -24,6 +24,8 @@
 		}
 	};
 
+	let input: Input;
+
 	$: uncheckedItems = data.items.filter((item) => !item.checked);
 	$: checkedItems = data.items.filter((item) => item.checked);
 	let optimisticItems: { id: string; name: string }[] = [];
@@ -48,6 +50,7 @@
 			formElement.reset();
 			return ({ update }) =>
 				update().finally(() => {
+					input.focus();
 					const index = optimisticItems.findIndex((item) => item.id === id);
 					if (index !== -1) {
 						optimisticItems.splice(index, 1);
@@ -57,7 +60,7 @@
 		}
 	}}
 >
-	<Input class="w-full" name="item" placeholder="Add item to shopping list" autofocus />
+	<Input bind:this={input} class="w-full" name="item" placeholder="Add item to shopping list" />
 	<Button type="submit" class="px-8">Add</Button>
 </form>
 
