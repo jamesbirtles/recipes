@@ -23,22 +23,6 @@
 			invalidate('supabase:shopping_list_items');
 		}
 	};
-	const updateName = async (id: string, name: string) => {
-		if (name.trim() !== '') {
-			try {
-				const result = await data.supabase
-					.from('shopping_list_items')
-					.update({ name })
-					.eq('id', id);
-				if (result.error) {
-					throw result.error;
-				}
-			} catch {
-				toast.error('Failed to update shopping list');
-				invalidate('supabase:shopping_list_items');
-			}
-		}
-	};
 
 	$: uncheckedItems = data.items.filter((item) => !item.checked);
 	$: checkedItems = data.items.filter((item) => item.checked);
@@ -57,13 +41,14 @@
 
 <div class="space-y-4">
 	{#if uncheckedItems.length > 0}
-		<div class="space-y-1 rounded-lg border px-4 py-2">
+		<div class="rounded-lg border px-4 py-2">
 			{#each uncheckedItems as item (item.id)}
 				<ListItem
 					bind:checked={item.checked}
 					bind:name={item.name}
 					onCheckedChange={(checked) => updateChecked(item.id, checked)}
-					onNameChange={(name) => updateName(item.id, name)}
+					quantity={item.quantity}
+					unit={item.unit}
 				/>
 			{/each}
 		</div>
@@ -76,13 +61,14 @@
 					<Button type="submit" variant="ghost" class="hover:bg-white">Clear</Button>
 				</form>
 			</div>
-			<div class="space-y-1 px-4 pb-2">
+			<div class="px-4 pb-2">
 				{#each checkedItems as item (item.id)}
 					<ListItem
 						bind:checked={item.checked}
 						bind:name={item.name}
 						onCheckedChange={(checked) => updateChecked(item.id, checked)}
-						onNameChange={(name) => updateName(item.id, name)}
+						quantity={item.quantity}
+						unit={item.unit}
 					/>
 				{/each}
 			</div>

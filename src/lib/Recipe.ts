@@ -7,7 +7,7 @@ export const RecipeStep = Schema.TaggedStruct('RecipeStep', {
 
 export const RecipeSection = Schema.TaggedStruct('RecipeSection', {
 	title: Schema.String,
-	steps: Schema.Array(RecipeStep),
+	steps: Schema.Array(RecipeStep).pipe(Schema.mutable),
 });
 
 export const Ingredient = Schema.Struct({
@@ -58,9 +58,9 @@ export const Recipe = Schema.Struct({
 	title: Schema.String,
 	url: Schema.String,
 	image: Schema.String.pipe(Schema.OptionFromNullOr),
-	instructions: Schema.Array(RecipeSection).pipe(Schema.OptionFromNullOr),
-	ingredients: Schema.Array(Ingredient),
-	original_ingredients: Schema.Array(Schema.String),
+	instructions: Schema.Array(RecipeSection).pipe(Schema.mutable, Schema.OptionFromNullOr),
+	ingredients: Schema.Array(Ingredient).pipe(Schema.mutable),
+	original_ingredients: Schema.Array(Schema.String).pipe(Schema.mutable),
 });
 export const NewRecipe = Recipe.pipe(Schema.omit('user_id'));
 export const encodeRecipe = Schema.encodeUnknownSync(Recipe);

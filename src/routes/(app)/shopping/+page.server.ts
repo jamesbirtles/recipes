@@ -20,8 +20,8 @@ export const actions = {
 
 		const { error } = await supabase.rpc('insertShoppingListItem', {
 			name: name.trim(),
-			quantity: null,
-			unit: null,
+			quantity: undefined,
+			unit: undefined,
 			user_id: user.id,
 		});
 		if (error) {

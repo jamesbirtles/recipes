@@ -60,8 +60,8 @@ export const actions = {
 			recipe.ingredients.map(async (ingredient) => {
 				const { error } = await supabase.rpc('insertShoppingListItem', {
 					name: ingredient.name,
-					unit: ingredient.unit.pipe(Option.getOrNull),
-					quantity: ingredient.quantity.pipe(Option.getOrNull),
+					unit: ingredient.unit.pipe(Option.getOrUndefined),
+					quantity: ingredient.quantity.pipe(Option.getOrUndefined),
 					user_id: user.id,
 				});
 				if (error) {

@@ -12,7 +12,8 @@
 		"lint": "prettier --check . && eslint .",
 		"format": "prettier --write .",
 		"test:integration": "playwright test",
-		"test:unit": "vitest"
+		"test:unit": "vitest",
+		"gen:supabase-types": "supabase gen types --local --schema public > src/lib/database.types.ts"
 	},
 	"devDependencies": {
 		"@playwright/test": "^1.28.1",
