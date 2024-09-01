@@ -201,7 +201,8 @@ const extractIngredients = (ingredients: readonly string[]) =>
 			messages: [
 				{
 					role: 'system',
-					content: 'Convert the list of ingredients into the given format.',
+					content:
+						'Convert the list of ingredients into the given format. When multiple items are given on one line, split them into multiple outputs, even when they are the same ingredient. When both volumetric and weight based units are given, choose weight. Do not attempt to convert any units. Do not add up quantities into one entry. Do not make up quantities if they are not specified. Correct any grammar mistakes.',
 				},
 				{ role: 'user', content: JSON.stringify(ingredients) },
 			],
