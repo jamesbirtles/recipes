@@ -13,11 +13,16 @@
 	import { twMerge } from 'tailwind-merge';
 	import BackButton from '$lib/components/BackButton.svelte';
 	import type { PageData } from './$types';
+	import { Input } from '$lib/components/ui/input';
+	import { multiplyIngredients } from '$lib/Recipe';
 
 	export let data: PageData;
 	$: ({ recipe, supabase } = data);
 
 	let reimporting = false;
+	let servings = data.recipe.servings.pipe(Option.getOrElse(() => 1));
+
+	$: servingsMultiplier = servings / recipe.servings.pipe(Option.getOrElse(() => 1));
 
 	const friendlyURL = (urlString: string) => {
 		const url = new URL(urlString);
@@ -106,8 +111,12 @@
 
 		<div>
 			<h3 class="scroll-m-20 text-xl font-semibold tracking-tight">Ingredients</h3>
+			<div class="flex items-center justify-between">
+				<div>Servings:</div>
+				<Input type="number" class="w-20" bind:value={servings} min={1} />
+			</div>
 			<IngredientsList
-				ingredients={recipe.ingredients}
+				ingredients={multiplyIngredients(recipe.ingredients, servingsMultiplier)}
 				originalIngredients={recipe.original_ingredients}
 			/>
 		</div>

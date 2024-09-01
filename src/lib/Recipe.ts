@@ -98,3 +98,18 @@ export const convertToMetric = (ingredient: typeof Ingredient.Type) => {
 		unit: Option.some(toUnit),
 	});
 };
+
+export const multiplyIngredients = (
+	ingredients: readonly (typeof Ingredient.Type)[],
+	multiplier: number,
+) =>
+	ingredients.map((ingredient) =>
+		Option.match(ingredient.quantity, {
+			onSome: (quantity) =>
+				Ingredient.make({ ...ingredient, quantity: Option.some(quantity * multiplier) }),
+			onNone: () =>
+				multiplier === 1
+					? ingredient
+					: Ingredient.make({ ...ingredient, quantity: Option.some(multiplier) }),
+		}),
+	);
