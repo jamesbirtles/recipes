@@ -1,4 +1,5 @@
 import { Schema } from '@effect/schema';
+import { Match, Option } from 'effect';
 
 export const RecipeStep = Schema.TaggedStruct('RecipeStep', {
 	title: Schema.String.pipe(Schema.optionalWith({ as: 'Option' })),
@@ -65,3 +66,34 @@ export const Recipe = Schema.Struct({
 export const NewRecipe = Recipe.pipe(Schema.omit('user_id'));
 export const encodeRecipe = Schema.encodeUnknownSync(Recipe);
 export const decodeRecipe = Schema.decodeUnknownSync(Recipe);
+
+const TO_GRAMS = {
+	lbs: 453.59237,
+	oz: 28.34952,
+	kg: 0.001,
+};
+const TO_ML = {
+	cup: 236.5882365,
+};
+
+export const convertToMetric = (ingredient: typeof Ingredient.Type) => {
+	if (Option.isNone(ingredient.quantity) || Option.isNone(ingredient.unit)) {
+		return ingredient;
+	}
+
+	const fromQuantity = ingredient.quantity.value;
+	const fromUnit = ingredient.unit.value;
+
+	const [toQuantity, toUnit] = Match.value(fromUnit).pipe(
+		Match.whenOr('pounds', 'pound', 'lbs', 'lb', () => [fromQuantity * TO_GRAMS.lbs, 'g'] as const),
+		Match.whenOr('ounces', 'ounce', 'ozs', 'oz', () => [fromQuantity * TO_GRAMS.oz, 'g'] as const),
+		Match.whenOr('cups', 'cup', () => [fromQuantity * TO_ML.cup, 'ml'] as const),
+		Match.orElse(() => [fromQuantity, fromUnit] as const),
+	);
+
+	return Ingredient.make({
+		...ingredient,
+		quantity: Option.some(Number(toQuantity.toPrecision(3))),
+		unit: Option.some(toUnit),
+	});
+};

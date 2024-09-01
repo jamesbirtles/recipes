@@ -7,12 +7,16 @@
 	let className: string | undefined = undefined;
 	export { className as class };
 	export let hintClass: string | undefined = undefined;
+	export let convert: (ingredient: typeof Ingredient.Type) => typeof Ingredient.Type = (
+		ingredient,
+	) => ingredient;
 
 	export let ingredients: readonly (typeof Ingredient.Type)[];
 </script>
 
 <ul class={twMerge('space-y-1 text-gray-700', className)}>
-	{#each ingredients as ingredient, index}
+	{#each ingredients as originalIngredient, index}
+		{@const ingredient = convert(originalIngredient)}
 		<li class="flex">
 			<Checkbox id="ingredient-{index}" class="mx-3 mt-1" />
 			<label for="ingredient-{index}">
