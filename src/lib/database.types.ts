@@ -17,6 +17,7 @@ export type Database = {
           ingredients: Json[]
           instructions: Json | null
           original_ingredients: string[]
+          servings: number | null
           title: string
           url: string
           user_id: string
@@ -28,6 +29,7 @@ export type Database = {
           ingredients?: Json[]
           instructions?: Json | null
           original_ingredients?: string[]
+          servings?: number | null
           title: string
           url: string
           user_id: string
@@ -39,6 +41,7 @@ export type Database = {
           ingredients?: Json[]
           instructions?: Json | null
           original_ingredients?: string[]
+          servings?: number | null
           title?: string
           url?: string
           user_id?: string
@@ -109,25 +112,15 @@ export type Database = {
         }
         Returns: undefined
       }
-      insertShoppingListItem:
-        | {
-            Args: {
-              name: string
-              quantity: number
-              unit: string
-              user_id: string
-            }
-            Returns: undefined
-          }
-        | {
-            Args: {
-              name: string
-              user_id: string
-              quantity?: number
-              unit?: string
-            }
-            Returns: undefined
-          }
+      insertShoppingListItem: {
+        Args: {
+          name: string
+          user_id: string
+          quantity?: number
+          unit?: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
