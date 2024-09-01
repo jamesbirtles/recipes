@@ -91,8 +91,11 @@
 {/if}
 
 {#if !data.query}
-	<div class="mt-8 flex items-center justify-center">
-		<Button href="/import?return" class="[view-transition-name:import-button]">
+	<div class="sticky bottom-24 mt-8 flex items-center justify-center sm:static">
+		<Button
+			href="/import?return"
+			class="shadow-lg [view-transition-name:import-button] sm:shadow-none"
+		>
 			<span class="flex items-center [view-transition-name:import-button-text]">
 				<ImportIcon class="mr-4 h-4 w-4" /> Import Recipe
 			</span>
