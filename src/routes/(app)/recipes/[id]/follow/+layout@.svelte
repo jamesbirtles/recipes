@@ -1,28 +1,11 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
 	import XIcon from 'lucide-svelte/icons/x';
-	import { onMount } from 'svelte';
+	import { keepScreenAwake } from '$lib/keepScreenAwake.js';
 
 	export let data;
 
-	onMount(() => {
-		let wakeLock: WakeLockSentinel | null = null;
-		navigator.wakeLock.request('screen').then(
-			(lock) => {
-				console.info('WakeLock aquired');
-				wakeLock = lock;
-			},
-			(err) => {
-				console.warn('failed to get wakelock', err);
-			},
-		);
-		return () => {
-			wakeLock?.release().then(() => {
-				console.info('WakeLock released');
-			});
-			wakeLock = null;
-		};
-	});
+	keepScreenAwake();
 </script>
 
 <div class="mx-auto flex h-screen max-w-screen-2xl flex-col p-8 md:p-16 lg:p-24">
