@@ -81,3 +81,12 @@
 	overflow: clip;
 	object-position: left;
 }
+
+::view-transition-group(import-button),
+::view-transition-group(import-button-text) {
+	@apply z-10;
+}
+
+::view-transition-group(bottom-nav) {
+	@apply z-50;
+}
