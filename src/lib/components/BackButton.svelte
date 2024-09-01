@@ -11,7 +11,7 @@
 <Button
 	variant="link"
 	{href}
-	class="mb-6 self-start"
+	class="mb-6 self-start p-0"
 	on:click={(evt) => {
 		if (shouldReturn) {
 			evt.preventDefault();

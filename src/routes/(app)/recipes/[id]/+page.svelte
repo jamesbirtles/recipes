@@ -37,7 +37,7 @@
 	<title>{recipe.title}</title>
 </svelte:head>
 
-<div class="mx-auto max-w-screen-xl p-6">
+<div class="mx-auto max-w-screen-xl">
 	<BackButton href="/" />
 
 	<div class="grid gap-8 sm:grid-cols-[16rem,1fr] md:grid-cols-[20rem,1fr]">
@@ -52,12 +52,12 @@
 			/>
 		{/if}
 
-		<div class="flex flex-col gap-2">
+		<div class="flex flex-col gap-2 overflow-hidden">
 			<h3 class="scroll-m-20 text-2xl font-semibold tracking-tight">
 				{recipe.title}
 			</h3>
-			<div class="flex items-center gap-2">
-				<ExternalLinkIcon class="h-3.5 w-3.5 shrink-0" />
+			<div class="overflow-hidden truncate">
+				<ExternalLinkIcon class="mr-1 inline-block h-3.5 w-3.5 shrink-0" />
 				<a
 					href={recipe.url}
 					target="_blank"
@@ -67,7 +67,7 @@
 					{friendlyURL(recipe.url)}
 				</a>
 			</div>
-			<div class="mt-6 space-x-1">
+			<div class="mt-6 flex flex-col flex-wrap gap-1.5 sm:flex-row">
 				<form
 					method="post"
 					class="contents"
