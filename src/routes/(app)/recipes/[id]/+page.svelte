@@ -67,6 +67,13 @@
 					{friendlyURL(recipe.url)}
 				</a>
 			</div>
+			<dl class="mt-2 text-sm">
+				{#if Option.isSome(recipe.servings)}
+					<dt class="mr-1 inline text-gray-700">Serves</dt>
+					<dd class="inline font-medium">{recipe.servings.value}</dd>
+				{/if}
+			</dl>
+
 			<div class="mt-6 flex flex-col flex-wrap gap-1.5 sm:flex-row">
 				<form
 					method="post"

@@ -40,5 +40,8 @@ export const Recipe = Schema.Struct({
 	name: String,
 	recipeInstructions: RecipeInstructions.pipe(Schema.optionalWith({ as: 'Option' })),
 	recipeIngredient: Schema.ArrayEnsure(String).pipe(Schema.mutable),
+	recipeYield: Schema.ArrayEnsure(
+		Schema.Union(Schema.Number, Schema.NumberFromString, Schema.String),
+	).pipe(Schema.optionalWith({ as: 'Option' })),
 });
 export const decodeRecipe = Schema.decodeUnknownSync(Recipe);

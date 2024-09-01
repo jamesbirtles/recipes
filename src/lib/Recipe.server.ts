@@ -160,6 +160,7 @@ const extractRecipe = async (
 		instructions,
 		ingredients,
 		original_ingredients: recipe.recipeIngredient,
+		servings: recipe.recipeYield.pipe(Option.andThen(Array.findFirst(Predicate.isNumber))),
 	};
 };
 

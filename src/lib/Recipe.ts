@@ -62,6 +62,7 @@ export const Recipe = Schema.Struct({
 	instructions: Schema.Array(RecipeSection).pipe(Schema.mutable, Schema.OptionFromNullOr),
 	ingredients: Schema.Array(Ingredient).pipe(Schema.mutable),
 	original_ingredients: Schema.Array(Schema.String).pipe(Schema.mutable),
+	servings: Schema.Number.pipe(Schema.OptionFromNullOr),
 });
 export const NewRecipe = Recipe.pipe(Schema.omit('user_id'));
 export const encodeRecipe = Schema.encodeUnknownSync(Recipe);
