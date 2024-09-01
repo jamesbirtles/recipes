@@ -39,12 +39,13 @@
 	method="post"
 	action="?/add"
 	class="mb-6 flex w-full items-center gap-2"
-	use:enhance={({ formData }) => {
+	use:enhance={({ formData, formElement }) => {
 		const name = formData.get('item');
 		if (typeof name === 'string') {
 			const id = crypto.randomUUID();
 			optimisticItems.push({ id, name });
 			optimisticItems = optimisticItems;
+			formElement.reset();
 			return ({ update }) =>
 				update().finally(() => {
 					const index = optimisticItems.findIndex((item) => item.id === id);
