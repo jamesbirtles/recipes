@@ -111,8 +111,7 @@
 				{/each}
 			{:else}
 				<p class="italic">
-					We couldn't find any method for this recipe. You might be able to view them manually on
-					the <a
+					We couldn't find any method for this recipe. You might be able to view it manually on the <a
 						class="text-primary underline"
 						target="_blank"
 						rel="noopener noreferrer"
@@ -122,6 +121,4 @@
 			{/if}
 		</div>
 	</div>
-
-	<!-- <pre class="mt-16">{JSON.stringify(recipe, null, 2)}</pre> -->
 </div>
