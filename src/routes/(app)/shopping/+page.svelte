@@ -26,6 +26,7 @@
 
 	$: uncheckedItems = data.items.filter((item) => !item.checked);
 	$: checkedItems = data.items.filter((item) => item.checked);
+	let optimisticItems: { id: string; name: string }[] = [];
 </script>
 
 <svelte:head>
@@ -34,7 +35,27 @@
 
 <PageHeader title="Shopping List" />
 
-<form method="post" action="?/add" class="mb-6 flex w-full items-center gap-2" use:enhance>
+<form
+	method="post"
+	action="?/add"
+	class="mb-6 flex w-full items-center gap-2"
+	use:enhance={({ formData }) => {
+		const name = formData.get('item');
+		if (typeof name === 'string') {
+			const id = crypto.randomUUID();
+			optimisticItems.push({ id, name });
+			optimisticItems = optimisticItems;
+			return ({ update }) =>
+				update().finally(() => {
+					const index = optimisticItems.findIndex((item) => item.id === id);
+					if (index !== -1) {
+						optimisticItems.splice(index, 1);
+						optimisticItems = optimisticItems;
+					}
+				});
+		}
+	}}
+>
 	<Input class="w-full" name="item" placeholder="Add item to shopping list" autofocus />
 	<Button type="submit" class="px-8">Add</Button>
 </form>
@@ -50,6 +71,9 @@
 					quantity={item.quantity}
 					unit={item.unit}
 				/>
+			{/each}
+			{#each optimisticItems as item (item.id)}
+				<ListItem name={item.name} />
 			{/each}
 		</div>
 	{/if}

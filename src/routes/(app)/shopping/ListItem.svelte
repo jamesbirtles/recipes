@@ -4,19 +4,20 @@
 	import { Option } from 'effect';
 
 	export let name: string;
-	export let quantity: Option.Option<number>;
-	export let unit: Option.Option<string>;
-	export let checked: boolean;
-	export let onCheckedChange: (checked: boolean) => void;
+	export let quantity: Option.Option<number> = Option.none();
+	export let unit: Option.Option<string> = Option.none();
+	export let checked: boolean = false;
+	export let onCheckedChange: ((checked: boolean) => void) | undefined = undefined;
 </script>
 
 <div class="flex gap-2">
 	<Checkbox
 		class="mt-2.5"
+		disabled={!onCheckedChange}
 		bind:checked
 		onCheckedChange={(change) => {
 			if (change !== 'indeterminate') {
-				onCheckedChange(change);
+				onCheckedChange?.(change);
 			}
 		}}
 	/>
